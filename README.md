@@ -141,7 +141,6 @@ All the command files you add here should be loaded auto-magically!
 
 
 
-
 misc:phpstorm:metadata
 ----------------------
 
@@ -566,11 +565,7 @@ config:export
 
 Info:
 Exports all config values to yaml files, interacts with the
-[Modules Config](https://github.com/OXIDprojects/oxid_modules_config/) module,
-[__which currently isn't fully ported to OXID 6 yet!__](https://github.com/OXIDprojects/oxid_modules_config/tree/dev-6.0-wip)
-Currently using experimental, [bleeding edge branch](https://github.com/OXIDprojects/oxid_modules_config/tree/PSGEN-282-Config_export_import_module_full_port_to_v6) :)
-To try it, use this in your composer.json: 
-"oxid-community/oxid_modules_config": "dev-PSGEN-282-Config_export_import_module_full_port_to_v6",
+[Modules Config](https://github.com/OXIDprojects/oxid_modules_config/) module
 
 ### Options:
 
@@ -677,11 +672,7 @@ config:import
 
 Info:
 Imports all config values from yaml files, interacts with the
-[Modules Config](https://github.com/OXIDprojects/oxid_modules_config/) module,
-[__which currently isn't fully ported to OXID 6 yet!__](https://github.com/OXIDprojects/oxid_modules_config/tree/dev-6.0-wip)
-Currently using experimental, [bleeding edge branch](https://github.com/OXIDprojects/oxid_modules_config/tree/PSGEN-282-Config_export_import_module_full_port_to_v6) :)
-To try it, use this in your composer.json: 
-"oxid-community/oxid_modules_config": "dev-PSGEN-282-Config_export_import_module_full_port_to_v6",
+[Modules Config](https://github.com/OXIDprojects/oxid_modules_config/) module
 
 ### Options:
 
@@ -1169,7 +1160,6 @@ views:update
 Updates the views
 
 ### Options:
-
 
 
 # Run the unit tests
