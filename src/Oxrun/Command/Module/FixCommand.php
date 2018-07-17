@@ -192,6 +192,25 @@ class FixCommand extends Command
             $oConfig->saveShopConfVar('arr', 'aModulePaths', $aModulePaths, $sShopId);
             $output->writeLn("[INFO] Module {$sModuleId} removed from aModulePaths");
         }
+        
+        // check module controllers
+        $aModuleControllers = $oConfig->getShopConfVar('aModuleControllers', $sShopId);
+        $aModuleControllersDisplay = array_map(function ($key, $val) {
+            return array(
+                $key, print_r($val, true)
+            );
+        }, array_keys($aModuleControllers), $aModuleControllers);
+        $table = new Table($output);
+        $table
+            ->setHeaders(array('Module', 'Controllers'))
+            ->setRows($aModuleControllersDisplay);
+        $table->render();
+
+        if (array_key_exists($sModuleId, $aModuleControllers)) {
+            unset($aModuleControllers[$sModuleId]);
+            $oConfig->saveShopConfVar('arr', 'aModuleControllers', $aModuleControllers, $sShopId);
+            $output->writeLn("[INFO] Module {$sModuleId} removed from aModuleControllers");
+        }
     }
 
     /**
