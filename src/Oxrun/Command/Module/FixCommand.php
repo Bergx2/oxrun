@@ -17,7 +17,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Helper\Table;
 
-use OxidEsales\EshopCommunity\Core\Exception\InputException;
+use OxidEsales\Eshop\Core\Exception\InputException;
+use OxidEsales\Eshop\Core\Module\ModuleList;
+
 use Oxrun\Helper\ModuleStateFixer;
 use Oxrun\Helper\SpecificShopConfig;
 
@@ -286,7 +288,7 @@ class FixCommand extends Command
         // We are calling getModulesFromDir() because we want to refresh
         // the list of available modules. This is a workaround for OXID
         // bug.
-        $oModuleList = oxNew('oxModuleList');
+        $oModuleList = oxNew(ModuleList::class);
         $oModuleList->setConfig($oConfig);
         $oModuleList->getModulesFromDir($oConfig->getModulesDir());
         $_aAvailableModuleIds = array_keys($oConfig->getConfigParam('aModulePaths'));
@@ -302,7 +304,7 @@ class FixCommand extends Command
      */
     protected function cleanup($oConfig, $oDebugOutput)
     {
-        $oModuleList = oxNew("oxModuleList");
+        $oModuleList = oxNew(ModuleList::class);
         $oModuleList->setConfig($oConfig);
         $aDeletedExt = $oModuleList->getDeletedExtensions();
         if ($aDeletedExt) {
