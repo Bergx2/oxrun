@@ -18,6 +18,7 @@ use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Helper\Table;
 
 use OxidEsales\Eshop\Core\Exception\InputException;
+use OxidEsales\Eshop\Core\Module\Module;
 use OxidEsales\Eshop\Core\Module\ModuleList;
 
 use Oxrun\Helper\ModuleStateFixer;
@@ -97,8 +98,8 @@ class FixCommand extends Command
         /** @var ModuleStateFixer $oModuleStateFixer */
         $oModuleStateFixer = new ModuleStateFixer();
         $oModuleStateFixer->setDebugOutput($oDebugOutput);
-        /** @var oxModule $oModule */
-        $oModule = oxNew('oxModule');
+        /** @var Module $oModule */
+        $oModule = oxNew(Module::class);
         foreach ($aShopConfigs as $oConfig) {
             try {
                 $aModuleIds = $this->parseModuleIds($input, $oConfig);

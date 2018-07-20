@@ -9,6 +9,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use OxidEsales\Eshop\Core\Module\Module;
+
 /**
  * Class ListCommand
  * @package Oxrun\Command\Module
@@ -51,7 +53,7 @@ class ListCommand extends Command
         $activeModules = array_map(
             function ($item) {
                 // check if really active
-                $oModule = oxNew('oxModule');
+                $oModule = oxNew(Module::class);
                 if ($oModule->load($item) && $oModule->isActive()) {
                     return array($item, 'yes');
                 }

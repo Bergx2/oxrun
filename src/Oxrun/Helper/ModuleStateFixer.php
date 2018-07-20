@@ -16,6 +16,8 @@ use OxidEsales\EshopCommunity\Core\Config;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\SettingsHandler;
 
+use OxidEsales\Eshop\Core\Module\ModuleCache;
+
 /**
  * Module state fixer
  */
@@ -48,8 +50,8 @@ class ModuleStateFixer extends ModuleInstaller
         $settingsHandler->setModuleType('module')->run($oModule);
         $this->_addModuleVersion($oModule->getInfo("version"), $sModuleId);
         $this->_addModuleEvents($oModule->getInfo("events"), $sModuleId);
-        /** @var oxModuleCache $oModuleCache */
-        $oModuleCache = oxNew('oxModuleCache', $oModule);
+        /** @var ModuleCache $oModuleCache */
+        $oModuleCache = oxNew(ModuleCache::class, $oModule);
         $oModuleCache->resetCache();
     }
     public function setDebugOutput(OutputInterface $o)
