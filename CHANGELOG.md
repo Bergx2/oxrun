@@ -1,5 +1,9 @@
 # OXRUN CHANGELOG
 
+## v0.6.3
+
+* only cleanup after module fix if not resetting
+
 ## v0.6.2
 
 * OXID 6 compat improved

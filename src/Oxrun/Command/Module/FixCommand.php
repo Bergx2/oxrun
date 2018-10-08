@@ -138,7 +138,10 @@ class FixCommand extends Command
                     exit(1);
                 }
             }
-            $this->cleanup($oConfig, $oDebugOutput);
+            // only cleanup if not resetting
+            if (!$input->getOption('reset')) {
+                $this->cleanup($oConfig, $oDebugOutput);
+            }
         }
         
         $output->writeLn("<info>Modules fixed</info>");
