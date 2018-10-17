@@ -1,5 +1,10 @@
 # OXRUN CHANGELOG
 
+## v0.6.4
+
+* removed deprecated shop install command, not relevant for OXID >= 6.0
+* removed guzzlehttp dependency
+
 ## v0.6.3
 
 * only cleanup after module fix if not resetting

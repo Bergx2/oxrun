@@ -2,11 +2,11 @@
   "name": "smxsm/oxrun",
   "description": "Oxrun provides a cli toolset for the OXID eShop Community Edition",
   "license": "MIT",
-  "version": "v0.6.3",
+  "version": "v0.6.4",
   "support": {
-    "issues": "https://github.com/marcharding/oxrun/issues"
+    "issues": "https://github.com/smxsm/oxrun/issues"
   },
-  "homepage": "https://github.com/marcharding/oxrun",
+  "homepage": "https://github.com/smxsm/oxrun",
   "keywords": [
     "oxid",
     "installer",
@@ -17,7 +17,6 @@
     "symfony/event-dispatcher":"2.8.*",
     "symfony/finder":"2.8.*",
     "symfony/yaml":"2.8.*",
-    "guzzlehttp/guzzle": "^5.0",
     "raulfraile/distill": "0.9.*",
     "nikic/php-parser": "1.4.*"
   },
