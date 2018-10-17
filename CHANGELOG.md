@@ -1,5 +1,10 @@
 # OXRUN CHANGELOG
 
+## v0.6.5
+
+* added possibility to load custom commands from module folders
+* removed some deprecated code and files
+
 ## v0.6.4
 
 * removed deprecated shop install command, not relevant for OXID >= 6.0

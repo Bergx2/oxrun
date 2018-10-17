@@ -79,7 +79,9 @@ __Please note:__ since activating modules and updating config values requires a 
 
 # Roll your own
 
-Of course, you want to add your own commands to oxrun! To do so without having to touch the vendor lib or forking the whole repository, follow these steps:
+Of course, you want to add your own commands to oxrun! To do so without having to touch the vendor lib or forking the whole repository, choose one of the two possibilities:
+
+## Via global folder
 
 * inside your OXID "source" directory, add a folder "oxruncmds"
 * inside this folder, add the folder structure "Oxrun\Command\YOUR_PACKAGE", e.g. "Oxrun\Command\Example"
@@ -136,6 +138,31 @@ class ExampleCommand extends Command
 ```
 
 All the command files you add here should be loaded auto-magically!
+
+## Inside module folders
+
+You can also __add custom commands to your module folders__! To do this, simply __add a folder named "Commands"__ (or "commands" or "Command") to your module folder and add "*Command.php" files to it, e.g. _"source\modules\myvendor\mymodule\Commands\FooCommand.php"_.
+
+Then add the correct namespace and your command code - done!
+
+```php
+<?php
+namespace Myvendor\Mymodule\Commands;
+
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+
+/**
+ * Class FooCommand
+ * @package Myvendor\Mymodule\Commands
+ */
+class FooCommand extends Command
+{
+    ...
+```
 
 # Available commands
 

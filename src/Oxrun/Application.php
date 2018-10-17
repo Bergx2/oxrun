@@ -1,4 +1,12 @@
 <?php
+/*
+ * Created for oxrun
+
+ * Some code in this file was taken from OXID Console package.
+ * See https://github.com/OXIDprojects/oxid-console/
+ *
+ * (c) Eligijus Vitkauskas <eligijusvitkauskas@gmail.com>
+ */
 
 namespace Oxrun;
 
@@ -9,6 +17,8 @@ use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Command\HelpCommand;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Command\Command;
+use OxidEsales\Eshop\Core\Registry;
 
 /**
  * Class Application
@@ -180,6 +190,9 @@ class Application extends BaseApplication
      */
     public function addCustomCommandDir()
     {
+        // always add modules dir
+        $this->addModulesCommandDirs();
+
         $commandSourceDir          = __DIR__ . '/../../../../../source/oxruncmds';
         if (!file_exists($commandSourceDir)) {
             return;
@@ -189,7 +202,39 @@ class Application extends BaseApplication
         
         foreach ($regexIterator as $commandPath) {
             $commandClass = str_replace(array($commandSourceDir, '/', '.php'), array('', '\\', ''), $commandPath);
-            $this->add(new $commandClass);
+            $instance = new $commandClass;
+            if ($this->isCommandCompatibleClass($instance)) {
+                $this->add($instance);
+            }
+        }
+    }
+
+    /**
+     * Add modules folder in OXID source directory
+     * Every module may have a subfolder "[C|c]ommand[s]" containing
+     * oxrun commands which we try to load here
+     *
+     * @return void
+     */
+    protected function addModulesCommandDirs()
+    {
+        $config = Registry::getConfig();
+        $modulesRootPath = $config->getModulesDir();
+        $paths = $this->getPathsOfAvailableModules();
+        $pathToPhpFiles = $this->getPhpFilesMatchingPatternForCommandFromGivenPaths(
+            $paths
+        );
+        foreach ($pathToPhpFiles as $commandPath) {
+            $commandClass = str_replace(array($modulesRootPath, '/', '.php'), array('', '\\', ''), $commandPath);
+            // ok, we have to do a ucfirst() for the namespace parts of the class name, e.g.
+            // replace "\foo\bar\Classname" with "\Foo\Bar\Classname"
+            $commandClass = preg_replace_callback('/([\\\])\s*(\w)/', function ($matches) {
+                return strtoupper($matches[1] . $matches[2]);
+            }, ucfirst(strtolower($commandClass)));
+            $instance = new $commandClass;
+            if ($this->isCommandCompatibleClass($instance)) {
+                $this->add($instance);
+            }
         }
     }
 
@@ -203,9 +248,7 @@ class Application extends BaseApplication
             return $this->oxid_version;
         }
 
-        if ($this->findVersionOnOxidLegacy() == false) {
-            $this->findVersionOnOxid6();
-        }
+        $this->findVersionOnOxid6();
 
         return $this->oxid_version;
     }
@@ -266,15 +309,6 @@ class Application extends BaseApplication
      */
     public function switchToShopId($shopId)
     {
-        $oxidVersion = $this->getOxidVersion();
-        if (version_compare($oxidVersion, '4.9.0') < 0) {
-            // old OXID versions
-            $oConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
-            $oConfig->setShopId($shopId);
-            \OxidEsales\Eshop\Core\Registry::set('oxConfig', $oConfig);
-            return;
-        }
-
         $_POST['shp'] = $shopId;
         $_POST['actshop'] = $shopId;
         
@@ -334,24 +368,7 @@ class Application extends BaseApplication
         
         return $ymlString;
     }
-    
-    
-    /**
-     * Find Version on Place into Oxid Legacy Code
-     *
-     * @return bool
-     */
-    protected function findVersionOnOxidLegacy()
-    {
-        $pkgInfo = $this->getShopDir() . DIRECTORY_SEPARATOR . 'pkg.info';
-        if (file_exists($pkgInfo)) {
-            $pkgInfo = parse_ini_file($pkgInfo);
-            $this->oxid_version = $pkgInfo['version'];
-            return true;
-        }
-        return false;
-    }
-
+        
     /**
      * Find Version up to OXID 6 Version
      * @throws \Exception
@@ -363,5 +380,88 @@ class Application extends BaseApplication
         }
 
         $this->oxid_version = \OxidEsales\Eshop\Core\ShopVersion::getVersion();
+    }
+    
+    /**
+     * Filter out classes with predefined criteria to be accepted as valid `Command` classes.
+     *
+     * A given class should match the following criteria:
+     *   a) Extends `Symfony\Component\Console\Command\Command`;
+     *   b) Is not `Symfony\Component\Console\Command\Command` itself.
+     *
+     * @param string $class
+     *
+     * @return boolean
+     */
+    private function isCommandCompatibleClass($class)
+    {
+        return is_subclass_of($class, Command::class) && $class !== Command::class;
+    }
+    /**
+     * Return list of paths to all available modules.
+     *
+     * @return string[]
+     */
+    private function getPathsOfAvailableModules()
+    {
+        $config = Registry::getConfig();
+        $modulesRootPath = $config->getModulesDir();
+        $modulePaths = $config->getConfigParam('aModulePaths');
+        if (!is_dir($modulesRootPath)) {
+            return [];
+        }
+        if (!is_array($modulePaths)) {
+            return [];
+        }
+        $fullModulePaths = array_map(function ($modulePath) use ($modulesRootPath) {
+            return $modulesRootPath . $modulePath;
+        }, array_values($modulePaths));
+        return array_filter($fullModulePaths, function ($fullModulePath) {
+            return is_dir($fullModulePath);
+        });
+    }
+    /**
+     * Return list of PHP files matching `Command` specific pattern.
+     *
+     * @param string $path Path to collect files from
+     *
+     * @return string[]
+     */
+    private function getPhpFilesMatchingPatternForCommandFromGivenPath($path)
+    {
+        $folders = ['Commands','commands','Command'];
+        foreach ($folders as $f) {
+            $cPath = $path . DIRECTORY_SEPARATOR . $f . DIRECTORY_SEPARATOR;
+            if (!is_dir($cPath)) {
+                continue;
+            }
+            $files = glob("$cPath*[cC]ommand\.php");
+            return $files;
+        }
+        return [];
+    }
+    /**
+     * Convert array of arrays to flat list array.
+     *
+     * @param array[] $nonFlatArray
+     *
+     * @return array
+     */
+    private function getFlatArray($nonFlatArray)
+    {
+        return array_reduce($nonFlatArray, 'array_merge', []);
+    }
+    /**
+     * Helper method for `getPhpFilesMatchingPatternForCommandFromGivenPath`
+     *
+     * @param string[] $paths
+     *
+     * @return string[]
+     */
+    private function getPhpFilesMatchingPatternForCommandFromGivenPaths($paths)
+    {
+        return $this->getFlatArray(array_map(function ($path) {
+            return $this->getPhpFilesMatchingPatternForCommandFromGivenPath($path);
+        }, $paths));
     }
 }
