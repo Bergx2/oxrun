@@ -1,5 +1,10 @@
 # OXRUN CHANGELOG
 
+## v0.6.7
+
+* fix for exceptionlog command with new log file name and structure
+  since OXID 6.0.3
+
 ## v0.6.6
 
 * fix for loading from modules dir if namespace does not match folder name(s)

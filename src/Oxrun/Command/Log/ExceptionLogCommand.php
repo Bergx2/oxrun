@@ -39,17 +39,29 @@ class ExceptionLogCommand extends Command
     protected $numLines = 100;
 
     /**
-     * Regex patterns for log entries
+     * Regex patterns for EXCEPTION_LOG.txt log entries
      *
      * @var array
      */
-    protected $aRegEx = [
+    protected $aRegExLegacy = [
         'DATE' => '/\[([0-9]{2}\s[A-Za-z]{3}\s[0-9:.]*\s[0-9]{4})\]/',
         // \x5c stands for "backslash",
         // see https://stackoverflow.com/questions/11044136/right-way-to-escape-backslash-in-php-regex
         'ERROR_TYPE' => '/\[.*\]\s\[([a-z]*)\]\s\[([\x5c a-zA-Z]*)\]/', // e.g. [type Error] or [stacktrace]
         'ERROR_CODE' => '/\[code\s([0-9]*)]/', // e.g. [code 0]
         'FILE' => '/\[file\s([%^A-Za-z0-9\/\.\-\_]*)]/',
+        'TRACE' => '/(#[0-9]*\s.*|\[line\s[0-9]{1,}.*\])/sim',
+    ];
+    /**
+     * Regex patterns for oxideshop.log log entries
+     *
+     * @var array
+     */
+    protected $aRegEx = [
+        'DATE' => '/\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]/', // [2018-10-17 15:19:38]
+        'ERROR_TYPE' => '/.*\sLogger\.([A-Z]*):\s/', // e.g. OXID Logger.ERROR:
+        'ERROR_CODE' => '/\(code:\s([0-9]*)/', // e.g. (Error(code: 0):
+        'FILE' => '/\sat\s([%^A-Za-z0-9\/\.\-\_]*):/',
         'TRACE' => '/(#[0-9]*\s.*|\[line\s[0-9]{1,}.*\])/sim',
     ];
 
@@ -86,8 +98,13 @@ class ExceptionLogCommand extends Command
         }
 
         $oConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
-        $this->sLogFile = $oConfig->getConfigParam('sShopDir') . DIRECTORY_SEPARATOR . "log" . DIRECTORY_SEPARATOR. "EXCEPTION_LOG.txt";
-
+        $isLegacyFile = false;
+        $this->sLogFile = $oConfig->getConfigParam('sShopDir') . DIRECTORY_SEPARATOR . "log" . DIRECTORY_SEPARATOR. "oxideshop.log";
+        if (!file_exists($this->sLogFile)) {
+            $isLegacyFile = true;
+            // fallback OXID < 6.0.3
+            $this->sLogFile = $oConfig->getConfigParam('sShopDir') . DIRECTORY_SEPARATOR . "log" . DIRECTORY_SEPARATOR. "EXCEPTION_LOG.txt";
+        }
         $output->writeln("<info>Logfile: {$this->sLogFile}</info>");
 
         $aEntries = $this->getLogEntries($output);
@@ -104,25 +121,29 @@ class ExceptionLogCommand extends Command
         // parse info for table view
         $aSplitEntries = array();
         $aSplitEntries[] = array("Date", "Type", "Code", "File", "Message");
+        $mRegEx = $this->aRegEx;
+        if ($isLegacyFile) {
+            $mRegEx = $this->aRegExLegacy;
+        }
         foreach ($aEntries as $logEntry) {
             $aMatches = array();
-            preg_match($this->aRegEx['ERROR_TYPE'], $logEntry, $aMatches);
-            $sErrType = $aMatches[2];
+            preg_match($mRegEx['ERROR_TYPE'], $logEntry, $aMatches);
+            $sErrType = $aMatches[1];
 
             $aMatches = array();
-            preg_match($this->aRegEx['DATE'], $logEntry, $aMatches);
+            preg_match($mRegEx['DATE'], $logEntry, $aMatches);
             $sDate = $aMatches[1];
 
             $aMatches = array();
-            preg_match($this->aRegEx['ERROR_CODE'], $logEntry, $aMatches);
+            preg_match($mRegEx['ERROR_CODE'], $logEntry, $aMatches);
             $sErrCode = $aMatches[1];
 
             $aMatches = array();
-            preg_match($this->aRegEx['FILE'], $logEntry, $aMatches);
+            preg_match($mRegEx['FILE'], $logEntry, $aMatches);
             $sErrFile = $aMatches[1];
 
             $aMatches = array();
-            preg_match($this->aRegEx['TRACE'], $logEntry, $aMatches);
+            preg_match($mRegEx['TRACE'], $logEntry, $aMatches);
             $sErrTrace = $aMatches[1];
 
             $aSplitEntries[] = array($sDate, $sErrType, $sErrCode, $sErrFile, $sErrTrace);
@@ -171,10 +192,10 @@ class ExceptionLogCommand extends Command
                 $results[] = $line;
                 $count++;
             }
-            return $results;
         } else {
             $output->writeln("<error>No logfile found!</error>");
         }
+        return $results;
     }
 
     /**
