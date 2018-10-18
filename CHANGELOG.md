@@ -1,5 +1,10 @@
 # OXRUN CHANGELOG
 
+## v0.6.6
+
+* fix for loading from modules dir if namespace does not match folder name(s)
+* finally removed deprecated shop install command, not relevant for OXID >= 6.0
+
 ## v0.6.5
 
 * added possibility to load custom commands from module folders

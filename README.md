@@ -409,93 +409,6 @@ Requires php, exec and MySQL CLI tools installed on your system.
 * Is value required: yes
 * Description: Table name to dump without data. Use comma separated list and or pattern e.g. %voucher%
 
-install:shop __[DEPRECATED]__
------------------------------
-
-* Description: Installs the shop, for OXID 6 composer is used instead!
-* Usage:
-
-  * `install:shop __[DEPRECATED]__ [--oxidVersion [OXIDVERSION]] [--installationFolder [INSTALLATIONFOLDER]] [--dbHost DBHOST] [--dbUser DBUSER] [--dbPwd DBPWD] [--dbName DBNAME] [--dbPort [DBPORT]] [--installSampleData [INSTALLSAMPLEDATA]] [--shopURL SHOPURL] [--adminUser ADMINUSER] [--adminPassword ADMINPASSWORD]`
-
-Installs the shop, for OXID 6 composer is used instead!
-
-### Options:
-
-**oxidVersion:**
-
-* Name: `--oxidVersion`
-* Is value required: no
-* Description: Oxid version
-
-**installationFolder:**
-
-* Name: `--installationFolder`
-* Is value required: no
-* Description: Installation folder
-* Default: `'/var/www/html/oxrun-demo/source'`
-
-**dbHost:**
-
-* Name: `--dbHost`
-* Is value required: yes
-* Description: Database host
-* Default: `'localhost'`
-
-**dbUser:**
-
-* Name: `--dbUser`
-* Is value required: yes
-* Description: Database user
-* Default: `'oxid'`
-
-**dbPwd:**
-
-* Name: `--dbPwd`
-* Is value required: yes
-* Description: Database password
-* Default: `''`
-
-**dbName:**
-
-* Name: `--dbName`
-* Is value required: yes
-* Description: Database name
-* Default: `'oxid'`
-
-**dbPort:**
-
-* Name: `--dbPort`
-* Is value required: no
-* Description: Database port
-* Default: `3306`
-
-**installSampleData:**
-
-* Name: `--installSampleData`
-* Is value required: no
-* Description: Install sample data
-* Default: `true`
-
-**shopURL:**
-
-* Name: `--shopURL`
-* Is value required: yes
-* Description: Installation base url
-
-**adminUser:**
-
-* Name: `--adminUser`
-* Is value required: yes
-* Description: Admin user email/login
-* Default: `'admin@example.com'`
-
-**adminPassword:**
-
-* Name: `--adminPassword`
-* Is value required: yes
-* Description: Admin password
-* Default: `'oxid-123456'`
-
 cache:clear
 -----------
 
@@ -588,33 +501,27 @@ config:export
 * Description: Export shop config
 * Usage:
 
-  * `config:export [--no-debug] [--env [ENV]] [--force-cleanup [FORCE-CLEANUP]]`
+  * `config:export [-e|--env ENV] [-f|--force-cleanup]`
 
-Info:
-Exports all config values to yaml files, interacts with the
-[Modules Config](https://github.com/OXIDprojects/oxid_modules_config/) module
+Export shop config
 
 ### Options:
-
-**no-debug:**
-
-* Name: `--no-debug`
-* Accept value: no
-* Is value required: no
-* Description: No debug ouput
-* Default: `false`
 
 **env:**
 
 * Name: `--env`
-* Is value required: no
-* Description: set specific environment, corresponds to a specific folder for the yaml files
+* Shortcut: `-e`
+* Is value required: yes
+* Description: Environment to execute in
 
 **force-cleanup:**
 
 * Name: `--force-cleanup`
+* Shortcut: `-f`
+* Accept value: no
 * Is value required: no
-* Description: Force cleanup on error
+* Description: Force clean-up
+* Default: `false`
 
 config:shop:set
 ---------------
@@ -695,33 +602,18 @@ config:import
 * Description: Import shop config
 * Usage:
 
-  * `config:import [--no-debug] [--env [ENV]] [--force-cleanup [FORCE-CLEANUP]]`
+  * `config:import [-e|--env ENV]`
 
-Info:
-Imports all config values from yaml files, interacts with the
-[Modules Config](https://github.com/OXIDprojects/oxid_modules_config/) module
+Import shop config
 
 ### Options:
-
-**no-debug:**
-
-* Name: `--no-debug`
-* Accept value: no
-* Is value required: no
-* Description: No debug ouput
-* Default: `false`
 
 **env:**
 
 * Name: `--env`
-* Is value required: no
-* Description: set specific environment, corresponds to a specific folder for the yaml files
-
-**force-cleanup:**
-
-* Name: `--force-cleanup`
-* Is value required: no
-* Description: Force cleanup on error
+* Shortcut: `-e`
+* Is value required: yes
+* Description: Environment to execute in
 
 config:multiset
 ---------------

@@ -202,9 +202,17 @@ class Application extends BaseApplication
         
         foreach ($regexIterator as $commandPath) {
             $commandClass = str_replace(array($commandSourceDir, '/', '.php'), array('', '\\', ''), $commandPath);
-            $instance = new $commandClass;
-            if ($this->isCommandCompatibleClass($instance)) {
-                $this->add($instance);
+            if (!class_exists($commandClass)) {
+                echo "\nClass $commandClass does not exist!\n";
+                continue;
+            }
+            try {
+                $instance = new $commandClass;
+                if ($this->isCommandCompatibleClass($instance)) {
+                    $this->add($instance);
+                }
+            } catch (\Exception $ex) {
+                echo "\nError loading class $commandClass!\n";
             }
         }
     }
@@ -224,16 +232,19 @@ class Application extends BaseApplication
         $pathToPhpFiles = $this->getPhpFilesMatchingPatternForCommandFromGivenPaths(
             $paths
         );
-        foreach ($pathToPhpFiles as $commandPath) {
-            $commandClass = str_replace(array($modulesRootPath, '/', '.php'), array('', '\\', ''), $commandPath);
-            // ok, we have to do a ucfirst() for the namespace parts of the class name, e.g.
-            // replace "\foo\bar\Classname" with "\Foo\Bar\Classname"
-            $commandClass = preg_replace_callback('/([\\\])\s*(\w)/', function ($matches) {
-                return strtoupper($matches[1] . $matches[2]);
-            }, ucfirst(strtolower($commandClass)));
-            $instance = new $commandClass;
-            if ($this->isCommandCompatibleClass($instance)) {
-                $this->add($instance);
+        $classes = $this->getAllClassesFromPhpFiles($pathToPhpFiles);
+        foreach ($classes as $commandClass) {
+            if (!class_exists($commandClass)) {
+                echo "\nClass $commandClass does not exist!\n";
+                continue;
+            }
+            try {
+                $instance = new $commandClass;
+                if ($this->isCommandCompatibleClass($instance)) {
+                    $this->add($instance);
+                }
+            } catch (\Exception $ex) {
+                echo "\nError loading class $commandClass!\n";
             }
         }
     }
@@ -381,7 +392,7 @@ class Application extends BaseApplication
 
         $this->oxid_version = \OxidEsales\Eshop\Core\ShopVersion::getVersion();
     }
-    
+
     /**
      * Filter out classes with predefined criteria to be accepted as valid `Command` classes.
      *
@@ -463,5 +474,48 @@ class Application extends BaseApplication
         return $this->getFlatArray(array_map(function ($path) {
             return $this->getPhpFilesMatchingPatternForCommandFromGivenPath($path);
         }, $paths));
+    }
+    /**
+     * Get list of defined classes from given PHP file.
+     *
+     * @param string $pathToPhpFile
+     *
+     * @return string[]
+     */
+    private function getAllClassesFromPhpFile($pathToPhpFile)
+    {
+        $classesBefore = get_declared_classes();
+        try {
+            require_once $pathToPhpFile;
+        } catch (\Throwable $exception) {
+            print "Can not add Command $pathToPhpFile:\n";
+            print $exception->getMessage() . "\n";
+        }
+        $classesAfter = get_declared_classes();
+        $newClasses = array_diff($classesAfter, $classesBefore);
+        if (count($newClasses) > 1) {
+            //try to find the correct class name to use
+            //this avoids warnings when module developer use there own command base class, that is not instantiable
+            $name = basename($pathToPhpFile, '.php');
+            foreach ($newClasses as $newClass) {
+                if ($newClass == $name) {
+                    return [$newClass];
+                }
+            }
+        }
+        return $newClasses;
+    }
+    /**
+     * Helper method for `getAllClassesFromPhpFile`
+     *
+     * @param string[] $pathToPhpFiles
+     *
+     * @return string[]
+     */
+    private function getAllClassesFromPhpFiles($pathToPhpFiles)
+    {
+        return $this->getFlatArray(array_map(function ($pathToPhpFile) {
+            return $this->getAllClassesFromPhpFile($pathToPhpFile);
+        }, $pathToPhpFiles));
     }
 }
